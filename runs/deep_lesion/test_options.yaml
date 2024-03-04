@@ -6,7 +6,8 @@ opt:
     dataset_type: deep_lesion
     deep_lesion:
       blacklist: data/deep_lesion/blacklist.json
-      dataset_dir: ../test
+      #dataset_dir: ../test
+      dataset_dir: data/deep_lesion/train
       load_mask: true
       normalize: true
       partial_holdout: 0.0
