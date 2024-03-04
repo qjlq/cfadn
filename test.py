@@ -58,7 +58,7 @@ class ADNTester(Tester):
        
         def visual_func(x):
             x = x * 0.5 + 0.5
-            x[x > visual_window[0]] = visual_window[0]
+            x[x < visual_window[0]] = visual_window[0]
             x[x > visual_window[1]] = visual_window[1]
             x = (x - visual_window[0]) / (visual_window[1] - visual_window[0])
             return x
