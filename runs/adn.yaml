@@ -19,7 +19,8 @@ deep_lesion:
     dataset_type: deep_lesion
     #dataset_dir: data/deep_lesion/test #here is the path of test sample
     #dataset_dir: ../complete/test #here is the path of test sample
-    dataset_dir: ../test
+    #dataset_dir: ../test
+    dataset_dir: data/deep_lesion/train
     partial_holdout: 0.0
     random_mask: False
     random_flip: False
