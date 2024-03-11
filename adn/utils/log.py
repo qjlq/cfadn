@@ -127,7 +127,7 @@ class Logger(object):
                     if not path.isdir(iter_visual_dir): os.makedirs(iter_visual_dir)
                     visual_file = path.join(iter_visual_dir,
                         "epoch{}_iter{}_{}.png".format(self.epoch, it, k))
-                    Image.fromarray(v).convert('RGB').save(visual_file)
+                    Image.fromarray(v).convert('RGB').resize((500,600)).save(visual_file)
 
             if hasattr(self, 'pair_fcn') and it % self.metrics_freq == self.metrics_freq - 1:
                 pairs, name = self.pair_fcn()
