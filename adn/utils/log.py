@@ -166,5 +166,5 @@ class Logger(object):
                 for k, v in visuals.items():
                     visual_file = path.join(visual_dir,
                         "epoch{}_{}_{}.png".format(self.epoch, k, i))
-                    Image.fromarray(v).convert('RGB').resize((400,300)).save(visual_file)
+                    #Image.fromarray(v).convert('RGB').resize((500,600)).save(visual_file)
         self.epoch += 1
