@@ -73,8 +73,8 @@ class Decoder(nn.Module):
             input_chs = input_chs[-num_sides:]
             for i in range(num_sides):
                 setattr(self, "fuse{}".format(i),
-                    #n.Conv2d(input_chs[i] * 2, input_chs[i], 1)) #nn.Conv2d是二维卷积方法
-                    nn.Transformer(input_chs[i] * 2, input_chs[i], 1))
+                    nn.Conv2d(input_chs[i] * 2, input_chs[i], 1)) #nn.Conv2d是二维卷积方法
+                    #nn.Transformer(input_chs[i] * 2, input_chs[i], 1))
             self.fuse = lambda x, y, i: getattr(self, "fuse{}".format(i))(torch.cat((x, y), 1))
         else:
             self.fuse = lambda x, y, i: x + y

@@ -91,6 +91,6 @@ opt:
   use_gpu: true
   visual_window:
   - 0.0
-  - 3.0
+  - 1.0
   visualize_step: 100
-  window_size: 100
+  window_size: 300
