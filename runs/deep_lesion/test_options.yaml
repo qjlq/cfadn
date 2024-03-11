@@ -93,4 +93,4 @@ opt:
   - 0.0
   - 1.0
   visualize_step: 100
-  window_size: 300
+  window_size: 100
