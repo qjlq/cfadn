@@ -19,10 +19,11 @@ class ADNTester(Tester):
                 return data['lq_image'], data['hq_image'], data["data_name"], data["mask"]
             else:
                 return data['lq_image'], data['hq_image'], data["data_name"]
-        elif dataset_type == "spineweb":
-            return data['a'], data['b'], data["data_name"]
-        elif dataset_type == "nature_image":
-            return data['artifact'], data['no_artifact'], data["data_name"]
+        else: print("please add argement 'deep_lesion'")
+        # elif dataset_type == "spineweb":
+        #     return data['a'], data['b'], data["data_name"]
+        # elif dataset_type == "nature_image":
+        #     return data['artifact'], data['no_artifact'], data["data_name"]
 
     def get_metric(self, metric):
         def measure(x, y):
@@ -52,8 +53,8 @@ class ADNTester(Tester):
     def get_visuals(self, n=1):
         #lookup = [
         #   ("l", "img_low"), ("ll", "pred_ll"), ("lh", "pred_lh"),
-        #   ("h", "img_high"), ("hl", "pred_hl"), ("hh", "pred_hh")]
-        lookup = [("lh", "pred_lh")]
+        #   ("h", "img_high"), ("hl", "pred_hl"), ("hh", "pred_hh")] #compare the differ
+        lookup = [("lh", "pred_lh")] 
         visual_window = self.opts.visual_window
        
         def visual_func(x):

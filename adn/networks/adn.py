@@ -49,7 +49,7 @@ class Decoder(nn.Module):
             input_chs.append(input_ch)
 
         for i in range(num_up):
-            m = nn.Sequential(
+            m = nn.Sequential( #一个有序的容器，神经网络模块将按照在传入构造器的顺序依次被添加到计算图中执行
                 nn.Upsample(scale_factor=2, mode="nearest"),
                 ConvolutionBlock(
                     in_channels=input_ch, out_channels=input_ch // 2, kernel_size=5,
@@ -73,7 +73,8 @@ class Decoder(nn.Module):
             input_chs = input_chs[-num_sides:]
             for i in range(num_sides):
                 setattr(self, "fuse{}".format(i),
-                    nn.Conv2d(input_chs[i] * 2, input_chs[i], 1))
+                    #n.Conv2d(input_chs[i] * 2, input_chs[i], 1)) #nn.Conv2d是二维卷积方法
+                    nn.Transformer(input_chs[i] * 2, input_chs[i], 1))
             self.fuse = lambda x, y, i: getattr(self, "fuse{}".format(i))(torch.cat((x, y), 1))
         else:
             self.fuse = lambda x, y, i: x + y

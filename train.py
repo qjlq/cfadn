@@ -1,13 +1,15 @@
-import os
-#os.environ['CUDA_VISIBLE_DEVICES']='0'
-import os.path as path
-import argparse
-import torch #my
+
 from adn.utils import \
     get_config, update_config, save_config, \
     get_last_checkpoint, add_post, Logger
 from adn.datasets import get_dataset
 from adn.models import ADNTrain
+#OUTSIDE import
+import os
+#os.environ['CUDA_VISIBLE_DEVICES']='0'
+import os.path as path
+import argparse
+import torch #my
 from torch.utils.data import DataLoader
 #from skimage.measure import compare_ssim as ssim
 from skimage.metrics import structural_similarity as ssim

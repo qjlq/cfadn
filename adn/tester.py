@@ -28,7 +28,7 @@ class Tester(object):
         args = parser.parse_args()
         return args
 
-    def get_opts(self, args):
+    def get_opts(self, args): 
         opts = get_config(args.default_config)
         run_opts = get_config(args.run_config)
         if args.run_name in run_opts and "test" in run_opts[args.run_name]:
@@ -49,7 +49,7 @@ class Tester(object):
 
     def get_loader(self, opts):
         self.dataset = get_dataset(**opts.dataset)
-        loader = DataLoader(self.dataset, batch_size=opts.batch_size, num_workers=opts.num_workers, shuffle=False)
+        loader = DataLoader(self.dataset, batch_size=opts.batch_size, num_workers=opts.num_workers, shuffle=False) # load data
         self.loader = add_post(loader, self.get_image)
         return self.loader
 
@@ -66,7 +66,7 @@ class Tester(object):
 
     def get_model(self, opts, checkpoint):
         self.model = self.model_class(**opts.model)
-        if opts.use_gpu: self.model.cuda()
+        if opts.use_gpu: self.model.cuda() # use gpu
         self.model.resume(checkpoint)
         return self.model
 
@@ -77,14 +77,14 @@ class Tester(object):
     def evaluate(self, model, data):
         pass
 
-    def run(self):
-        args = self.parse_args()
-        opts = self.get_opts(args)
-        loader = self.get_loader(opts)
-        checkpoint = self.get_checkpoint(opts)
-        model = self.get_model(opts, checkpoint)
-        logger = self.get_logger(opts)
+    def run(self):  ## tester.run start here
+        args = self.parse_args() #load the conf file
+        opts = self.get_opts(args) #load the option conf file
+        loader = self.get_loader(opts) #load data
+        checkpoint = self.get_checkpoint(opts) # if last run train not complete then resume the train from that point
+        model = self.get_model(opts, checkpoint) # 加载模型
+        logger = self.get_logger(opts) #log set
 
-        with torch.no_grad():
+        with torch.no_grad(): #使用 torch.no_grad() 来禁用自动求导
             for data in logger(loader):
                 self.evaluate(model, data)
