@@ -10,7 +10,7 @@ metrics_step: 1
 window_size: 100 # the moving average window size for training and testing stats
 visualize_step: 100 # number of batch iters to visualize ADN's outputs
 save_step: 10 # number of epochs to snapshot the currently trained model
-visual_window: [0.0, 3.0] # the pixel value window for CT image visualization
+visual_window: [5.0, 6.0] # the pixel value window for CT image visualization
 dataset:
   dataset_type: spineweb
   deep_lesion:
