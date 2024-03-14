@@ -3,7 +3,6 @@ import torch.nn as nn
 import functools
 from copy import deepcopy, copy
 from .blocks import ConvolutionBlock, ResidualBlock, FullyConnectedBlock
-from ..models.segformer import SegFormer
 from ..utils import print_model, FunctionModel
 
 
@@ -104,20 +103,46 @@ class ADN(nn.Module):
     def __init__(self, input_ch=1, base_ch=64, num_down=2, num_residual=4, num_sides="all",
         res_norm='instance', down_norm='instance', up_norm='layer', fuse=True, shared_decoder=False):
         super(ADN, self).__init__()
+        model = SegFormer(num_classes=num_classes, phi=phi, pretrained=True)
+        if not pretrained:
+            weights_init(model)
+        if model_path != '':
+            # ------------------------------------------------------#
+            #   权值文件请看README，百度网盘下载
+            # ------------------------------------------------------#
+            if local_rank == 0:
+                print('Load weights {}.'.format(model_path))
+
+            # ------------------------------------------------------#
+            #   根据预训练权重的Key和模型的Key进行加载
+            # ------------------------------------------------------#
+            model_dict = model.state_dict()
+            pretrained_dict = torch.load(model_path, map_location=device)
+            load_key, no_load_key, temp_dict = [], [], {}
+            for k, v in pretrained_dict.items():
+                if k in model_dict.keys() and np.shape(model_dict[k]) == np.shape(v):
+                    temp_dict[k] = v
+                    load_key.append(k)
+                else:
+                    no_load_key.append(k)
+            model_dict.update(temp_dict)
+            model.load_state_dict(model_dict)
+            # ------------------------------------------------------#
+            #   显示没有匹配上的Key
+            # ------------------------------------------------------#
+            if local_rank == 0:
+                print("\nSuccessful Load Key:", str(load_key)[:500], "……\nSuccessful Load Key Num:", len(load_key))
+                print("\nFail To Load Key:", str(no_load_key)[:500], "……\nFail To Load Key num:", len(no_load_key))
+                print("\n\033[1;33;44m温馨提示，head部分没有载入是正常现象，Backbone部分没有载入是错误的。\033[0m")
 
         self.n = num_down + num_residual + 1 if num_sides == "all" else num_sides
-        self.encoder_low = SegFormer(num_classes=2, phi='b5', pretrained=True)
-        # self.encoder_low = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
-        self.encoder_high = SegFormer(num_classes=2, phi='b5', pretrained=True)
-        # self.encoder_high = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
-        self.encoder_art = SegFormer(num_classes=2, phi='b5', pretrained=True)
-        # self.encoder_art = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
+        self.encoder_low = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
+        self.encoder_high = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
+        self.encoder_art = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
         self.decoder = Decoder(input_ch, base_ch, num_down, num_residual, self.n, res_norm, up_norm, fuse)
         self.decoder_art = self.decoder if shared_decoder else deepcopy(self.decoder)
 
     def forward1(self, x_low):
-        # print(1,x_low.shape) ([1, 1, 256, 256])
-        # self.encoder_art = SegFormer(num_classes=3, phi='b5', pretrained=True)
         _, sides = self.encoder_art(x_low)  # encode artifact
         self.saved = (x_low, sides)
         code, _ = self.encoder_low(x_low)  # encode low quality image

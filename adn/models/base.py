@@ -7,7 +7,7 @@ from collections import OrderedDict
 from torchvision.utils import make_grid
 from ..utils import get_device, to_npy, backprop_on, backprop_off
 
-
+torch.autograd.set_detect_anomaly(True)
 class Base(nn.Module):
     def __init__(self, *opts):
         super(Base, self).__init__()

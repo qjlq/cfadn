@@ -12,9 +12,9 @@ import argparse
 import torch #my
 from torch.utils.data import DataLoader
 #from skimage.measure import compare_ssim as ssim
-from skimage.metrics import structural_similarity as ssim
+# from skimage.metrics import structural_similarity as ssim
 #from skimage.measure import compare_psnr as psnr
-from skimage.metrics import peak_signal_noise_ratio as psnr
+# from skimage.metrics import peak_signal_noise_ratio as psnr
 
 
 if __name__ == "__main__":
