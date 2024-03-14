@@ -106,11 +106,11 @@ class ADN(nn.Module):
         super(ADN, self).__init__()
 
         self.n = num_down + num_residual + 1 if num_sides == "all" else num_sides
-        self.encoder_low = SegFormer(num_classes=2, phi='b5', pretrained=True)
+        self.encoder_low = SegFormer(num_classes=2, phi='b5', pretrained=False)
         # self.encoder_low = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
-        self.encoder_high = SegFormer(num_classes=2, phi='b5', pretrained=True)
+        self.encoder_high = SegFormer(num_classes=2, phi='b5', pretrained=False)
         # self.encoder_high = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
-        self.encoder_art = SegFormer(num_classes=2, phi='b5', pretrained=True)
+        self.encoder_art = SegFormer(num_classes=2, phi='b5', pretrained=False)
         # self.encoder_art = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
         self.decoder = Decoder(input_ch, base_ch, num_down, num_residual, self.n, res_norm, up_norm, fuse)
         self.decoder_art = self.decoder if shared_decoder else deepcopy(self.decoder)
