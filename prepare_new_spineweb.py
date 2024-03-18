@@ -45,10 +45,11 @@ if __name__ == "__main__":
         volume_files = read_dir(patient_dir, recursive=True)
         for volume_file in volume_files:
             volume_obj = sitk.ReadImage(volume_file)
-
+            print(volume_obj)
             volume = sitk.GetArrayFromImage(volume_obj)
+            print(volume)
             volume_name = path.basename(volume_file).split(".")[0]
-
+            print(volume_name)
             thumbnails = defaultdict(list)
             index = 0
             for image in tqdm(volume,
