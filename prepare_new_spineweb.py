@@ -33,19 +33,16 @@ if __name__ == "__main__":
     patient_dirs = read_dir(
         config['raw_dir'], predicate=lambda x: "patient" in x, recursive=True)
 
-    print(patient_dirs)
-
     image_size = config['image_size']
     if type(image_size) is not list: image_size = [image_size] * 2
     thumbnail_size = config['thumbnail_size']
     if type(thumbnail_size) is not list: thumbnail_size = [thumbnail_size] * 2
 
     for patient_dir in tqdm(patient_dirs):
-        print(patient_dir)
         patient_name = path.basename(patient_dir)
-        print(patient_name)
-        volume_files = read_dir(patient_dir,
-            predicate=lambda x: x.endswith("mhd") or x.endswith("nii.gz"), recursive=True)
+        # volume_files = read_dir(patient_dir,
+        #     predicate=lambda x: x.endswith("mhd") or x.endswith("nii.gz"), recursive=True)
+        volume_files = read_dir(patient_dir, recursive=True)
         for volume_file in volume_files:
             volume_obj = sitk.ReadImage(volume_file)
 
