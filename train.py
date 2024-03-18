@@ -88,4 +88,8 @@ if __name__ == "__main__":
         #
         for data in logger(train_loader):
             model.optimize(*data)
-        model.update_lr()
+            model.update_lr()
+        # import torch, gc
+        #
+        # gc.collect()
+        # torch.cuda.empty_cache()

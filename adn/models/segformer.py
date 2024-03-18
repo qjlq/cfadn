@@ -106,15 +106,15 @@ class SegFormer(nn.Module):
         inputs = self.convinput(inputs)
         H, W = inputs.size(2), inputs.size(3)
 
-        x_1234, x = self.backbone.forward(inputs)
+        x_1234 = self.backbone.forward(inputs)
         # print(x[0].shape,x[1].shape,x[2].shape,x[3].shape) #get 4 output
-        x = self.decode_head.forward(x)
+        x = self.decode_head.forward(x_1234)
         # print(1,x.shape)
         x = self.convout(x)
         # x_1234.append(x)
         
         x = F.interpolate(x, size=(H, W), mode='bilinear', align_corners=True)
-        return x, x_1234
+        return x
 
 if __name__ == '__main__':
     net = SegFormer(2, 'b5', False)

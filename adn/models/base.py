@@ -73,12 +73,7 @@ class Base(nn.Module):
         #     if k in checkpoint: v.load_state_dict(checkpoint[k])
         checkpoint = torch.load(checkpoint_file)
         for k, v in self._get_state_attrs():
-            #if k in checkpoint: v.load_state_dict(checkpoint[k])
-            try:
-                if k in checkpoint: v.load_state_dict(checkpoint[k])
-            except RuntimeError as e:
-                print('Ignoring "' + str(e) + '"')
-
+            if k in checkpoint: v.load_state_dict(checkpoint[k])
 
 
 

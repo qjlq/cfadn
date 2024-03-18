@@ -106,11 +106,11 @@ class ADN(nn.Module):
         super(ADN, self).__init__()
 
         self.n = num_down + num_residual + 1 if num_sides == "all" else num_sides
-        self.encoder_low = SegFormer(num_classes=2, phi='b5', pretrained=False)
+        self.encoder_low = SegFormer(num_classes=2, phi='b5', pretrained=True)
         # self.encoder_low = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
-        self.encoder_high = SegFormer(num_classes=2, phi='b5', pretrained=False)
+        self.encoder_high = SegFormer(num_classes=2, phi='b5', pretrained=True)
         # self.encoder_high = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
-        self.encoder_art = SegFormer(num_classes=2, phi='b5', pretrained=False)
+        self.encoder_art = SegFormer(num_classes=2, phi='b5', pretrained=True)
         # self.encoder_art = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
         self.decoder = Decoder(input_ch, base_ch, num_down, num_residual, self.n, res_norm, up_norm, fuse)
         self.decoder_art = self.decoder if shared_decoder else deepcopy(self.decoder)
@@ -118,11 +118,13 @@ class ADN(nn.Module):
     def forward1(self, x_low):
         # print(1,x_low.shape) ([1, 1, 256, 256])
         # self.encoder_art = SegFormer(num_classes=3, phi='b5', pretrained=True)
-        _, sides = self.encoder_art(x_low)  # encode artifact
-        self.saved = (x_low, sides)
-        code, _ = self.encoder_low(x_low)  # encode low quality image
-        y1 = self.decoder_art(code, sides[-self.n:]) # decode image with artifact (low quality)
-        y2 = self.decoder(code) # decode image without artifact (high quality)
+        y1 = self.encoder_art(x_low)  # encode artifact
+        self.saved = (x_low, y1)
+        y2 = self.encoder_low(x_low)  # encode low quality image
+        print(y2.shape)
+        exit()
+        # y1 = self.decoder_art(code, sides[-self.n:]) # decode image with artifact (low quality)
+        # y2 = self.decoder(code) # decode image without artifact (high quality)
         return y1, y2
 
     def forward2(self, x_low, x_high):

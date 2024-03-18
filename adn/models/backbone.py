@@ -450,7 +450,7 @@ class MixVisionTransformer(nn.Module):
     def forward(self, x):
 
         B = x.shape[0]
-        outs = []
+        # outs = []
         outs2 = []
 
         #----------------------------------#
@@ -464,8 +464,8 @@ class MixVisionTransformer(nn.Module):
         x = x.reshape(B, H, W, -1).permute(0, 3, 1, 2).contiguous()
         # print(x.shape)
         x = interpolate(x, size=(256, 256), mode='bilinear', align_corners=True)
-        x1 = self.conv1(x)
-        outs.append(x1)
+        # x1 = self.conv1(x)
+        # outs.append(x1)
         outs2.append(x)
 
         #----------------------------------#
@@ -477,8 +477,8 @@ class MixVisionTransformer(nn.Module):
         x = self.norm2(x)
         x = x.reshape(B, H, W, -1).permute(0, 3, 1, 2).contiguous()
         x = interpolate(x, size=(256, 256), mode='bilinear', align_corners=True)
-        x2 = self.conv2(x)
-        outs.append(x2)
+        # x2 = self.conv2(x)
+        # outs.append(x2)
         outs2.append(x)
         #----------------------------------#
         #   block3
@@ -489,8 +489,8 @@ class MixVisionTransformer(nn.Module):
         x = self.norm3(x)
         x = x.reshape(B, H, W, -1).permute(0, 3, 1, 2).contiguous()
         x = interpolate(x, size=(256, 256), mode='bilinear', align_corners=True)
-        x3 = self.conv3(x)
-        outs.append(x3)
+        # x3 = self.conv3(x)
+        # outs.append(x3)
         outs2.append(x)
         #----------------------------------#
         #   block4
@@ -501,10 +501,10 @@ class MixVisionTransformer(nn.Module):
         x = self.norm4(x)
         x = x.reshape(B, H, W, -1).permute(0, 3, 1, 2).contiguous()
         x = interpolate(x, size=(256, 256), mode='bilinear', align_corners=True)
-        x4 = self.conv4(x)
-        outs.append(x4)
+        # x4 = self.conv4(x)
+        # outs.append(x4)
         outs2.append(x)
-        return outs, outs2
+        return outs2
 
 class mit_b0(MixVisionTransformer):
     def __init__(self, pretrained = False):
@@ -564,8 +564,7 @@ class mit_b5(MixVisionTransformer):
             drop_rate=0.0, drop_path_rate=0.1)
         if pretrained:
             print("Load backbone weights")
-            #ckpt = torch.load("/home/ubuntu/complete/cfadn/segformer_b5_backbone_weights.pth")
-            ckpt = torch.load("/home/ubuntu/complete/cfadn/segformer_b5_backbone_weights.pth")
+            ckpt = torch.load("/media/xk/新加卷1/code/WWXcode/cfadn/cfadn/data/segformer_b5_backbone_weights.pth")
             ckpt.pop("patch_embed1.proj.weight")
             self.load_state_dict(ckpt,
                 strict=False)
