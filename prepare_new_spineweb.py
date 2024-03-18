@@ -33,6 +33,8 @@ if __name__ == "__main__":
     patient_dirs = read_dir(
         config['raw_dir'], predicate=lambda x: "patient" in x, recursive=True)
 
+    print(patient_dirs)
+
     image_size = config['image_size']
     if type(image_size) is not list: image_size = [image_size] * 2
     thumbnail_size = config['thumbnail_size']
