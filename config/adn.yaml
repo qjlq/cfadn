@@ -14,8 +14,8 @@ visual_window: [0.0, 1.0] # the pixel value window for CT image visualization
 dataset:
   dataset_type: deep_lesion
   deep_lesion:
-    #dataset_dir: ../complete/train #path to train sample
-    dataset_dir: data/deep_lesion/train #old path
+    dataset_dir: ../complete/train #path to train sample
+    #dataset_dir: data/deep_lesion/train #old path
     blacklist: 'data/deep_lesion/blacklist.json' # a list of deep lesion images containing clinical metal implants
     normalize: True
     partial_holdout: 0.5 # partially hold out some artifact-free images to create an unpaired senario
