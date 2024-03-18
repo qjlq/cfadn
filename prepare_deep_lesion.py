@@ -1,3 +1,4 @@
+import math
 import os
 import yaml
 from skimage.io import imread
@@ -6,6 +7,9 @@ import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 from helper import get_mar_params, simulate_metal_artifact
+import tomopy
+import numpy as np
+
 
 # Load params
 config_file = os.path.join('config', 'dataset.yaml')
@@ -48,9 +52,63 @@ for phase in splits:
     for ii in range(len(mask_indices)):
         mask_resize = resize(selected_metal[:, :, ii], (CTpara['imPixNum'], CTpara['imPixNum']), anti_aliasing=True)
 
+
+        def fanbeam(image, SOD, FanSensorGeometry='arc', FanSensorSpacing=None, FanRotationIncrement=None):
+            # 假设image是2D CT切片，SOD是源到物体的距离
+            # 其他参数FanSensorGeometry、FanSensorSpacing和FanRotationIncrement需要与CT扫描设置匹配
+
+            # 根据实际情况设置这些值
+            num_angles = 360  # 扫描角度数量
+            det_count = image.shape[1]  # 探测器像素数量，假设图像为行：探测器列数，列：像素高度
+            rotation_axis = 'vertical'  # 假设旋转轴垂直于床面
+
+            if FanSensorGeometry == 'arc':
+                # 对于弧形排列的探测器
+                if FanSensorSpacing is None:
+                    raise ValueError("For arc FanSensorGeometry, FanSensorSpacing must be provided.")
+                ang = np.linspace(0, 360 - FanRotationIncrement, num=num_angles, endpoint=False)
+                sino, _ = tomopy.project(image, angl=ang, center=det_count // 2, proj_type='平行束')
+
+            elif FanSensorGeometry == 'linear':
+                # 对于线性排列的探测器，此处假设探测器间距与FanSensorSpacing一致
+                if FanSensorSpacing is None or FanRotationIncrement is None:
+                    raise ValueError(
+                        "For linear FanSensorGeometry, both FanSensorSpacing and FanRotationIncrement must be provided.")
+                angles = np.arange(num_angles) * FanRotationIncrement
+                sino, _ = tomopy.project(image, theta=angles, pixel_size_x=FanSensorSpacing,
+                                         pixel_size_y=FanSensorSpacing,
+                                         dist_source_detector=SOD, axis=rotation_axis)
+
+            else:
+                raise ValueError(f"Unsupported FanSensorGeometry: {FanSensorGeometry}")
+
+            return sino
+
+
+        # 使用函数的例子：
+        # 假设我们有一个2D图像 data2d 和一组角度 angles
+        # data2d = np.random.rand(256, 256)  # 示例数据
+        # angles = np.linspace(0, 360, num=360, endpoint=False)  # 角度范围从0到360度，共360个均匀分布的角度
+        # sod = 980.0
+        # pixel_spacing = 0.5
+        # margin = 10  # 假设的探测器边缘到有效区域的距离
+        #
+        # proj = fanbeam_projection(data2d, sod, angles[1] - angles[0], pixel_spacing, CTpara['sinogram_size_y'])
+
+        # 注意：此简化版本可能不适用于所有情况，实际应用时应使用准确的系统参数进行计算。
+
+
+        # fan_beam_func = lambda x: fanbeam_projection(x, CTpara['SOD'], CTpara['angNum'],
+        #                                   CTpara['angSize'],CTpara['sinogram_size_y'])
+
         fan_beam_func = lambda x: fanbeam(x, CTpara['SOD'], FanSensorGeometry='arc',
                                           FanSensorSpacing=CTpara['angSize'],
                                           FanRotationIncrement=360/CTpara['angNum'])
+
+
+
+
+
         mask_proj = fan_beam_func(mask_resize)
         metal_trace = np.where(mask_proj > 0, 1, 0).astype(np.single)
 
