@@ -31,7 +31,7 @@ if __name__ == "__main__":
         config = yaml.load(f, Loader=yaml.FullLoader)['spineweb']
 
     patient_dirs = read_dir(
-        config['raw_dir'], predicate=lambda x: "patient" in x, recursive=True)
+        config['raw_dir'], recursive=True)
 
     print(patient_dirs)
 
