@@ -39,7 +39,9 @@ if __name__ == "__main__":
     if type(thumbnail_size) is not list: thumbnail_size = [thumbnail_size] * 2
 
     for patient_dir in tqdm(patient_dirs):
+        print(patient_dir)
         patient_name = path.basename(patient_dir)
+        print(patient_name)
         volume_files = read_dir(patient_dir,
             predicate=lambda x: x.endswith("mhd") or x.endswith("nii.gz"), recursive=True)
         for volume_file in volume_files:
