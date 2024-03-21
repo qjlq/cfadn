@@ -64,6 +64,7 @@ if __name__ == "__main__":
 
     # Get model
     model = ADNTrain(opts['learn'], opts['loss'], **opts['model'])
+    model = torch.nn.DataParallel(model) #multiple gpu
     if opts['use_gpu']: model.cuda()  #用Gpu
     #if opts['use_gpu']: model.cpu()    #用cpu
 #    if path.isfile(checkpoint): model.resume(checkpoint) #my 调用会出问题
