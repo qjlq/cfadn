@@ -54,6 +54,8 @@ if __name__ == "__main__":
         batch_size=opts["batch_size"], num_workers=opts['num_workers'], shuffle=True)
     train_loader = add_post(train_loader, get_image)
 
+
+
     # Get checkpoint
     if opts['last_epoch'] == 'last':
         checkpoint, start_epoch = get_last_checkpoint(run_dir)
@@ -73,6 +75,13 @@ if __name__ == "__main__":
     logger.add_loss_log(model.get_loss, opts["print_step"], opts['window_size'])
     logger.add_iter_visual_log(model.get_visuals, opts['visualize_step'], "train_visuals")
     logger.add_save_log(model.save, opts['save_step'])
+    
+    from lightning.fabric import Fabric
+
+    fabric = Fabric(accelerator="cuda",devices=1, precision="16-mixed")
+    fabric.launch()
+    model= fabric.setup(model)
+    train_loader = fabric.setup_dataloaders(train_loader)
 
     # Train the model
     for epoch in range(start_epoch, opts['num_epochs']):

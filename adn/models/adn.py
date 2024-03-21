@@ -62,6 +62,7 @@ class ADNTrain(BaseTrain):
             # self.model_g._criterion["gl"](self.pred_lh, self.img_high)
             # self.model_g._criterion["lh"](self.pred_lh, self.img_high)
             # self.model_g._criterion["ll"](self.pred_ll, self.img_low)
+
             self.model_dl._update()
 
         # high -> high_l, high -> high_h

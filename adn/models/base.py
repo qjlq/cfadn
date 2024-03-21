@@ -6,7 +6,10 @@ import types
 from collections import OrderedDict
 from torchvision.utils import make_grid
 from ..utils import get_device, to_npy, backprop_on, backprop_off
+from lightning.fabric import Fabric
 
+fabric = Fabric(accelerator="cuda")
+fabric.launch()
 torch.autograd.set_detect_anomaly(True)
 class Base(nn.Module):
     def __init__(self, *opts):
@@ -105,7 +108,10 @@ class BaseTrain(Base):
             #torch.autograd.set_detect_anomaly(True) #for cpu
             #
             #if hasattr(torch.cuda, 'empty_cache'): torch.cuda.empty_cache()
-            loss.backward()
+            from lightning.fabric import Fabric
+            fabric = Fabric(accelerator="cuda", devices=1, precision="16-mixed")
+            fabric.backward(loss)
+            #loss.backward()
             self._optimizer.step()
             if not backprop: backprop_off(self)
 
