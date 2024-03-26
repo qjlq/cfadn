@@ -66,8 +66,17 @@ class Tester(object):
 
     def get_model(self, opts, checkpoint):
         self.model = self.model_class(**opts.model)
-        if opts.use_gpu: self.model.cuda() # use gpu
+        # if opts.use_gpu: self.model.cuda() # use gpu
+        # self.model.resume(checkpoint)
+
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
+        device_ids = [0, 1]  # 可用GPU
+        self.model = torch.nn.DataParallel(self.model, device_ids=device_ids)
+        self.model = self.model.cuda(device=device_ids[0])  # 模型加载到设备0
         self.model.resume(checkpoint)
+
+
         return self.model
 
     def get_logger(self, opts):
