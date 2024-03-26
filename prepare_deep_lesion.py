@@ -6,7 +6,8 @@ from skimage.transform import resize
 import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
-from helper import get_mar_params, simulate_metal_artifact
+# from helper import get_mar_params, simulate_metal_artifact
+from cfadn import helper
 import tomopy
 import numpy as np
 
