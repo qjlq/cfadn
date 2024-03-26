@@ -56,6 +56,7 @@ class ADNTrain(BaseTrain):
             self.pred_ll, self.pred_lh = self.model_g.forward1(self.img_low)
             pred = self.pred_ll.clone()
             label = self.img_high.clone()
+            print(1,pred.shape, label.shape)
             self.model_g._criterion["gl"](pred, label)
             self.model_g._criterion["lh"](pred, label)
             self.model_g._criterion["ll"](pred, label)
