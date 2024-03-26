@@ -77,16 +77,16 @@ if __name__ == "__main__":
     # model = torch.nn.DataParallel(model,device_ids=[0,1],output_device=[1])
     #model = torch.nn.DataParallel(model,device_ids=[0,1]) #multiple gpu
     #if opts['use_gpu']: model.cuda()  #用Gpu
-
+    
 
     #if opts['use_gpu']: model.cpu()    #用cpu
 #    if path.isfile(checkpoint): model.resume(checkpoint) #my 调用会出问题
     #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # Get logger
     logger = Logger(run_dir, start_epoch, args.run_name)
-    logger.add_loss_log(model.get_loss, opts["print_step"], opts['window_size'])
-    logger.add_iter_visual_log(model.get_visuals, opts['visualize_step'], "train_visuals")
-    logger.add_save_log(model.save, opts['save_step'])
+    logger.add_loss_log(model.module.get_loss, opts["print_step"], opts['window_size'])
+    logger.add_iter_visual_log(model.module.get_visuals, opts['visualize_step'], "train_visuals")
+    logger.add_save_log(model.module.save, opts['save_step'])
 
     # Train the model
     for epoch in range(start_epoch, opts['num_epochs']):
