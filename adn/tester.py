@@ -93,10 +93,6 @@ class Tester(object):
         loader = self.get_loader(opts) #load data
         checkpoint = self.get_checkpoint(opts) # if last run train not complete then resume the train from that point
         model = self.get_model(opts, checkpoint) # 加载模型
-
-        device_ids = [0, 1]  # 可用GPU
-        model = torch.nn.DataParallel(model, device_ids=device_ids)
-
         logger = self.get_logger(opts) #log set
 
         with torch.no_grad(): #使用 torch.no_grad() 来禁用自动求导
