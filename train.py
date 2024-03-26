@@ -68,12 +68,17 @@ if __name__ == "__main__":
     model = ADNTrain(opts['learn'], opts['loss'], **opts['model'])
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
-    model = torch.nn.DataParallel(model,device_ids=[0,1],output_device=[1])
+    device_ids = [0, 1]  # 可用GPU
+    # model = torch.nn.DataParallel(model,device_ids=[0,1],output_device=[1])
+    model = torch.nn.DataParallel(model,device_ids=device_ids)
     #model = torch.nn.DataParallel(model,device_ids=[0,1]) #multiple gpu
-    if opts['use_gpu']: model.cuda()  #用Gpu
+    #if opts['use_gpu']: model.cuda()  #用Gpu
+
+    model = model.cuda(device=device_ids[0])    #模型加载到设备0
+
     #if opts['use_gpu']: model.cpu()    #用cpu
 #    if path.isfile(checkpoint): model.resume(checkpoint) #my 调用会出问题
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # Get logger
     logger = Logger(run_dir, start_epoch, args.run_name)
     #logger.add_loss_log(model.get_loss, opts["print_step"], opts['window_size'])
