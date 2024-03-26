@@ -66,15 +66,16 @@ class Tester(object):
 
     def get_model(self, opts, checkpoint):
         self.model = self.model_class(**opts.model)
-        # if opts.use_gpu: self.model.cuda() # use gpu
-        # self.model.resume(checkpoint)
-
-        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
-        device_ids = [0, 1]  # 可用GPU
-        self.model = torch.nn.DataParallel(self.model, device_ids=device_ids)
-        self.model = self.model.cuda(device=device_ids[0])  # 模型加载到设备0
+        if opts.use_gpu: self.model.cuda() # use gpu
         self.model.resume(checkpoint)
+
+        # 测试使用，测试并行
+        # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        # os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
+        # device_ids = [0, 1]  # 可用GPU
+        # self.model = torch.nn.DataParallel(self.model, device_ids=device_ids)
+        # self.model = self.model.cuda(device=device_ids[0])  # 模型加载到设备0
+        # self.model.resume(checkpoint)
 
 
         return self.model
@@ -92,6 +93,10 @@ class Tester(object):
         loader = self.get_loader(opts) #load data
         checkpoint = self.get_checkpoint(opts) # if last run train not complete then resume the train from that point
         model = self.get_model(opts, checkpoint) # 加载模型
+
+        device_ids = [0, 1]  # 可用GPU
+        model = torch.nn.DataParallel(model, device_ids=device_ids)
+
         logger = self.get_logger(opts) #log set
 
         with torch.no_grad(): #使用 torch.no_grad() 来禁用自动求导
