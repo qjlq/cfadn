@@ -100,10 +100,10 @@ if __name__ == "__main__":
         #
         #以下为原本代码
         #
-        model = model.module
+       
         for data in logger(train_loader):
-            model.optimize(*data)
-            model.update_lr()
+            model.module.optimize(*data)
+            model.module.update_lr()
         # import torch, gc
         #
         # gc.collect()
