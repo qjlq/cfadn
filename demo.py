@@ -25,7 +25,8 @@ MODEL_SPECS = {
   "g_type": "adn",
   "d_type": "nlayer",
   "adn": {
-    "input_ch": 1,
+    #"input_ch": 1,
+    "input_ch": 256,
     "base_ch": 64,
     "num_down": 2,
     "num_residual": 4,
