@@ -140,7 +140,8 @@ class ADN(nn.Module):
         if hasattr(self, "saved") and self.saved[0] is x_low: sides = self.saved[1]
         else: _, sides = self.encoder_art(x_low)  # encode artifact
 
-        code, _ = self.encoder_high(x_high) # encode high quality image
+        #code, _ = self.encoder_high(x_high) # encode high quality image
+        code = self.encoder_high(x_high) # encode high quality image
         y1 = self.decoder_art(code, sides[-self.n:])  # decode image with artifact (low quality)
         y2 = self.decoder(code) # decode without artifact (high quality)
         return y1, y2
