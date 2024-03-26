@@ -68,11 +68,11 @@ if __name__ == "__main__":
     #if opts['use_gpu']: model.cpu()    #用cpu
 #    if path.isfile(checkpoint): model.resume(checkpoint) #my 调用会出问题
 
-    # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    # os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
-    # device_ids = [0, 1]  # 可用GPU
-    # model = torch.nn.DataParallel(model,device_ids=device_ids)
-    # model = model.cuda(device=device_ids[0])    #模型加载到设备0
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
+    device_ids = [0, 1]  # 可用GPU
+    model = torch.nn.DataParallel(model,device_ids=device_ids)
+    model = model.cuda(device=device_ids[0])    #模型加载到设备0
 
     # model = torch.nn.DataParallel(model,device_ids=[0,1],output_device=[1])
     #model = torch.nn.DataParallel(model,device_ids=[0,1]) #multiple gpu
