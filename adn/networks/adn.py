@@ -5,7 +5,7 @@ from copy import deepcopy, copy
 from .blocks import ConvolutionBlock, ResidualBlock, FullyConnectedBlock
 from ..models.segformer import SegFormer
 from ..utils import print_model, FunctionModel
-
+import torch.nn.functional as F
 
 class Encoder(nn.Module):
     def __init__(self, input_ch, base_ch, num_down, num_residual, res_norm='instance', down_norm='instance'):
@@ -81,15 +81,18 @@ class Decoder(nn.Module):
         else:
             self.fuse = lambda x, y, i: x + y
 
-    def forward(self, x, sides=[]):
+    def forward(self, x, sides):
         m, n = len(self.layers), len(sides)
         assert m >= n, "Invalid side inputs"
-
+        x = self.conv(x)
         for i in range(m - n):
             x = self.layers[i](x)
 
         for i, j in enumerate(range(m - n, m)):
-            x = self.fuse(x, sides[i], i)
+
+            # S
+            # sides = self.conv(sides)
+            x = self.fuse(x, sides, i)
             x = self.layers[j](x)
 
         return x
@@ -112,15 +115,8 @@ class ADN(nn.Module):
         # self.encoder_high = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
         self.encoder_art = SegFormer(num_classes=1, phi='b5', pretrained=True)
         # self.encoder_art = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
-        self.decoder = Decoder(input_ch, base_ch, num_down, num_residual, self.n, res_norm, up_norm, fuse)
+        self.decoder = Decoder(input_ch, base_ch, num_down, num_residual, self.n, res_norm, up_norm, fuse=False)
         self.decoder_art = self.decoder if shared_decoder else deepcopy(self.decoder)
-
-        self.encoder_low = torch.nn.DataParallel(self.encoder_low)
-        self.encoder_high = torch.nn.DataParallel(self.encoder_high)
-        self.encoder_art = torch.nn.DataParallel(self.encoder_art)
-        self.decoder = torch.nn.DataParallel(self.decoder)
-        self.decoder_art = torch.nn.DataParallel(self.decoder_art)
-        
 
     def forward1(self, x_low):
         # print(1,x_low.shape) ([1, 1, 256, 256])
@@ -138,16 +134,16 @@ class ADN(nn.Module):
 
     def forward2(self, x_low, x_high):
         if hasattr(self, "saved") and self.saved[0] is x_low: sides = self.saved[1]
-        else: _, sides = self.encoder_art(x_low)  # encode artifact
-
-        code, _ = self.encoder_high(x_high) # encode high quality image
-        y1 = self.decoder_art(code, sides[-self.n:])  # decode image with artifact (low quality)
-        y2 = self.decoder(code) # decode without artifact (high quality)
+        else: sides = self.encoder_art(x_low)  # encode artifact
+        sides = F.interpolate(sides, size=(1024, 1024), mode='bilinear', align_corners=False)
+        y2 = self.encoder_high(x_high) # encode high quality image
+        y1 = self.decoder_art(y2, sides)  # decode image with artifact (low quality)
+        # y2 = self.decoder(code) # decode without artifact (high quality)
         return y1, y2
 
     def forward_lh(self, x_low):
-        code, _ = self.encoder_low(x_low)  # encode low quality image
-        y = self.decoder(code)
+        y = self.encoder_low(x_low)  # encode low quality image
+        # y = self.decoder(code)
         return y
 
     def forward_hl(self, x_low, x_high):
