@@ -118,6 +118,12 @@ class ADN(nn.Module):
         self.decoder = Decoder(input_ch, base_ch, num_down, num_residual, self.n, res_norm, up_norm, fuse=False)
         self.decoder_art = self.decoder if shared_decoder else deepcopy(self.decoder)
 
+        self.encoder_low = torch.nn.DataParallel(self.encoder_low)
+        self.encoder_high = torch.nn.DataParallel(self.encoder_high)
+        self.encoder_art = torch.nn.DataParallel(self.encoder_art)
+        self.decoder = torch.nn.DataParallel(self.decoder)
+        self.decoder_art = torch.nn.DataParallel(self.decoder_art)
+
     def forward1(self, x_low):
         # print(1,x_low.shape) ([1, 1, 256, 256])
         # self.encoder_art = SegFormer(num_classes=3, phi='b5', pretrained=True)
