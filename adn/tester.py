@@ -7,6 +7,7 @@ from adn.utils import \
     get_last_checkpoint, add_post, Logger
 from adn.datasets import get_dataset
 from torch.utils.data import DataLoader
+from .oripicture import *
 
 
 class Tester(object):
@@ -15,6 +16,9 @@ class Tester(object):
         self.model_class = model_class
         self.project_dir = project_dir
         self.description = description
+        self.ori_size = takeSize()
+        #print(self.res_path)
+
 
     def parse_args(self):
         default_config = path.join(self.project_dir, "config", self.name + ".yaml")
@@ -22,8 +26,12 @@ class Tester(object):
 
         parser = argparse.ArgumentParser(description=self.description)
         parser.add_argument("run_name", help="name of the run")
+        parser.add_argument("--res_path", default= "default",help="result path")
+        parser.add_argument("--img_width", default=self.ori_size[0] ,help="image width")
+        parser.add_argument("--img_height", default=self.ori_size[1],help="image height")
         parser.add_argument("--default_config", default=default_config, help="default configs")
         parser.add_argument("--run_config", default=run_config, help="run configs")
+        # parser.add_argument("--res_path", default=self.res_path, help="result path")
 
         args = parser.parse_args()
         return args
@@ -41,6 +49,9 @@ class Tester(object):
 
         self.run_dir = run_dir
         self.run_name = args.run_name
+        self.res_path = args.res_path
+        self.img_height = int(args.img_height)
+        self.img_width = int(args.img_width)
         self.opts = opts
         return opts
 
@@ -68,16 +79,6 @@ class Tester(object):
         self.model = self.model_class(**opts.model)
         if opts.use_gpu: self.model.cuda() # use gpu
         self.model.resume(checkpoint)
-
-        # 测试使用，测试并行
-        # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        # os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
-        # device_ids = [0, 1]  # 可用GPU
-        # self.model = torch.nn.DataParallel(self.model, device_ids=device_ids)
-        # self.model = self.model.cuda(device=device_ids[0])  # 模型加载到设备0
-        # self.model.resume(checkpoint)
-
-
         return self.model
 
     def get_logger(self, opts):
@@ -93,8 +94,15 @@ class Tester(object):
         loader = self.get_loader(opts) #load data
         checkpoint = self.get_checkpoint(opts) # if last run train not complete then resume the train from that point
         model = self.get_model(opts, checkpoint) # 加载模型
-        logger = self.get_logger(opts) #log set
+        # logger = self.get_logger(opts) #log set\
+        logger = self.get_logger2(opts) #log set\    
 
         with torch.no_grad(): #使用 torch.no_grad() 来禁用自动求导
             for data in logger(loader):
                 self.evaluate(model, data)
+        
+        # logger2 = self.get_logger2(opts) #log sets
+
+        # with torch.no_grad(): #使用 torch.no_grad() 来禁用自动求导
+        #     for data in logger2(loader):
+        #         self.evaluate(model, data)

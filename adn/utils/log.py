@@ -9,13 +9,15 @@ from collections import defaultdict, OrderedDict
 
 
 class Logger(object):
-    def __init__(self, log_dir, epoch=0, name="log"):
+    def __init__(self, log_dir, epoch=0, name="log", img_width=512, img_height=512):
         self.log_dir = log_dir
         self.epoch = epoch
         self.name = name if name != "" else "log"
         self.iter_visual_freq = float('inf')
         self.loss_freq = float('inf')
         self.save_freq = float('inf')
+        self.img_height = img_height
+        self.img_width = img_width
         self.format_float = \
             lambda x: np.format_float_scientific(x, exp_digits=1, precision=2)
 
@@ -62,6 +64,13 @@ class Logger(object):
         self.iter_visual_fcn = iter_visual_fcn
         self.iter_visual_freq = iter_visual_freq
         self.iter_visual_name = name
+
+    def add_iter_visual_log2(self, iter_visual_fcn,ori, iter_visual_freq, name="", oriname=""):
+        self.iter_visual_fcn = iter_visual_fcn
+        self.iter_visual_freq = iter_visual_freq
+        self.iter_visual_name = name
+        self.ori = ori
+        self.oriname = oriname
 
     def add_epoch_visual_log(self, epoch_visual_fcn, epoch_visual_freq, name=""):
         self.epoch_visual_fcn = epoch_visual_fcn
@@ -127,7 +136,18 @@ class Logger(object):
                     if not path.isdir(iter_visual_dir): os.makedirs(iter_visual_dir)
                     visual_file = path.join(iter_visual_dir,
                         "epoch{}_iter{}_{}.png".format(self.epoch, it, k))
-                    Image.fromarray(v).convert('RGB').resize((1200,1400)).save(visual_file) #change image size 
+                    # Image.fromarray(v).convert('RGB').resize((1200,1400)).save(visual_file) #change image size 
+                    Image.fromarray(v).convert('RGB').resize((self.img_width,self.img_height)).save(visual_file) #change image size 
+
+            if hasattr(self, 'ori') and it % self.iter_visual_freq == 0:
+                for k, v in self.ori().items():
+                    iter_visual_dir = path.join(self.log_dir, self.oriname)
+                    if not path.isdir(iter_visual_dir): os.makedirs(iter_visual_dir)
+                    visual_file = path.join(iter_visual_dir,
+                        "epoch{}_iter{}_{}.png".format(self.epoch, it, k))
+                    # Image.fromarray(v).convert('RGB').resize((1200,1400)).save(visual_file) #change image size 
+                    Image.fromarray(v).convert('RGB').resize((self.img_width,self.img_height)).save(visual_file) #change image size 
+
 
             if hasattr(self, 'pair_fcn') and it % self.metrics_freq == self.metrics_freq - 1:
                 pairs, name = self.pair_fcn()

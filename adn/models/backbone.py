@@ -541,9 +541,7 @@ class mit_b5(MixVisionTransformer):
             drop_rate=0.0, drop_path_rate=0.1)
         if pretrained:
             print("Load backbone weights")
-            #ckpt = torch.load("/media/xk/新加卷/code/WWXcode/cfadn/cfadn/data/segformer_b5_backbone_weights.pth")
-            ckpt = torch.load("/root/autodl-tmp/cfadn-main/segformer_b5_backbone_weights.pth")
-            #ckpt = torch.load("/home/ubuntu/complete/cfadn/segformer_b5_backbone_weights.pth")
+            ckpt = torch.load("/media/xk/新加卷/code/WWXcode/cfadn/cfadn/data/segformer_b5_backbone_weights.pth")
             ckpt.pop("patch_embed1.proj.weight")
             self.load_state_dict(ckpt,
                 strict=False)
