@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import torch
 import torch.nn as nn
 import functools
@@ -212,3 +213,4 @@ class NLayerDiscriminator(nn.Module):
     def forward(self, input):
         """Standard forward."""
         return self.model(input)
+
