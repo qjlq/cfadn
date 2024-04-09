@@ -14,8 +14,6 @@ from torch.nn.functional import interpolate
 
 
 def _no_grad_trunc_normal_(tensor, mean, std, a, b):
-    # Cut & paste from PyTorch official master until it's in a few official releases - RW
-    # Method based on https://people.sc.fsu.edu/~jburkardt/presentations/truncated_normal.pdf
     def norm_cdf(x):
         # Computes standard normal cumulative distribution function
         return (1. + math.erf(x / math.sqrt(2.))) / 2.
@@ -63,16 +61,10 @@ def trunc_normal_(tensor, mean=0., std=1., a=-2., b=2.):
         std: the standard deviation of the normal distribution
         a: the minimum cutoff value
         b: the maximum cutoff value
-    Examples:
-        >>> w = torch.empty(3, 5)
-        >>> nn.init.trunc_normal_(w)
     """
     return _no_grad_trunc_normal_(tensor, mean, std, a, b)
 
-#--------------------------------------#
-#   Gelu激活函数的实现
-#   利用近似的数学公式
-#--------------------------------------#
+
 class GELU(nn.Module):
     def __init__(self):
         super(GELU, self).__init__()
@@ -117,17 +109,7 @@ class OverlapPatchEmbed(nn.Module):
         # print(x.shape,H , W )
         return x, H, W
 
-#--------------------------------------------------------------------------------------------------------------------#
-#   Attention机制
-#   将输入的特征qkv特征进行划分，首先生成query, key, value。query是查询向量、key是键向量、v是值向量。
-#   然后利用 查询向量query 叉乘 转置后的键向量key，这一步可以通俗的理解为，利用查询向量去查询序列的特征，获得序列每个部分的重要程度score。
-#   然后利用 score 叉乘 value，这一步可以通俗的理解为，将序列每个部分的重要程度重新施加到序列的值上去。
-#   
-#   在segformer中，为了减少计算量，首先对特征图进行了浓缩，所有特征层都压缩到原图的1/32。
-#   当输入图片为512, 512时，Block1的特征图为128, 128，此时就先将特征层压缩为16, 16。
-#   在Block1的Attention模块中，相当于将8x8个特征点进行特征浓缩，浓缩为一个特征点。
-#   然后利用128x128个查询向量对16x16个键向量与值向量进行查询。尽管键向量与值向量的数量较少，但因为查询向量的不同，依然可以获得不同的输出。
-#--------------------------------------------------------------------------------------------------------------------#
+
 class Attention(nn.Module):
     def __init__(self, dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0., sr_ratio=1):
         super().__init__()
@@ -199,14 +181,6 @@ class Attention(nn.Module):
         return x
 
 def drop_path(x, drop_prob: float = 0., training: bool = False, scale_by_keep: bool = True):
-    """
-    Drop paths (Stochastic Depth) per sample (when applied in main path of residual blocks).
-    This is the same as the DropConnect impl I created for EfficientNet, etc networks, however,
-    the original name is misleading as 'Drop Connect' is a different form of dropout in a separate paper...
-    See discussion: https://github.com/tensorflow/tpu/issues/494#issuecomment-532968956 ... I've opted for
-    changing the layer and argument names to 'drop path' rather than mix DropConnect as a layer name and use
-    'survival rate' as the argument.
-    """
     if drop_prob == 0. or not training:
         return x
     keep_prob       = 1 - drop_prob
@@ -325,23 +299,10 @@ class MixVisionTransformer(nn.Module):
         self.num_classes    = num_classes
         self.depths         = depths
 
-        #----------------------------------#
-        #   Transformer模块，共有四个部分
-        #----------------------------------#
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]
-        
-        #----------------------------------#
-        #   block1
-        #----------------------------------#
-        #-----------------------------------------------#
-        #   对输入图像进行分区，并下采样
-        #   512, 512, 3 => 128, 128, 32 => 16384, 32
-        #-----------------------------------------------#
+
         self.patch_embed1 = OverlapPatchEmbed(patch_size=7, stride=4, in_chans=in_chans, embed_dim=embed_dims[0])
-        #-----------------------------------------------#
-        #   利用transformer模块进行特征提取
-        #   16384, 32 => 16384, 32
-        #-----------------------------------------------#
+
         cur = 0
         self.block1 = nn.ModuleList(
             [
@@ -353,19 +314,9 @@ class MixVisionTransformer(nn.Module):
             ]
         )
         self.norm1 = norm_layer(embed_dims[0])
-        
-        #----------------------------------#
-        #   block2
-        #----------------------------------#
-        #-----------------------------------------------#
-        #   对输入图像进行分区，并下采样
-        #   128, 128, 32 => 64, 64, 64 => 4096, 64
-        #-----------------------------------------------#
+
         self.patch_embed2 = OverlapPatchEmbed(patch_size=3, stride=2, in_chans=embed_dims[0], embed_dim=embed_dims[1])
-        #-----------------------------------------------#
-        #   利用transformer模块进行特征提取
-        #   4096, 64 => 4096, 64
-        #-----------------------------------------------#
+
         cur += depths[0]
         self.block2 = nn.ModuleList(
             [
@@ -378,18 +329,8 @@ class MixVisionTransformer(nn.Module):
         )
         self.norm2 = norm_layer(embed_dims[1])
 
-        #----------------------------------#
-        #   block3
-        #----------------------------------#
-        #-----------------------------------------------#
-        #   对输入图像进行分区，并下采样
-        #   64, 64, 64 => 32, 32, 160 => 1024, 160
-        #-----------------------------------------------#
         self.patch_embed3 = OverlapPatchEmbed(patch_size=3, stride=2, in_chans=embed_dims[1], embed_dim=embed_dims[2])
-        #-----------------------------------------------#
-        #   利用transformer模块进行特征提取
-        #   1024, 160 => 1024, 160
-        #-----------------------------------------------#
+
         cur += depths[1]
         self.block3 = nn.ModuleList(
             [
@@ -402,18 +343,9 @@ class MixVisionTransformer(nn.Module):
         )
         self.norm3 = norm_layer(embed_dims[2])
 
-        #----------------------------------#
-        #   block4
-        #----------------------------------#
-        #-----------------------------------------------#
-        #   对输入图像进行分区，并下采样
-        #   32, 32, 160 => 16, 16, 256 => 256, 256
-        #-----------------------------------------------#
+
         self.patch_embed4 = OverlapPatchEmbed(patch_size=3, stride=2, in_chans=embed_dims[2], embed_dim=embed_dims[3])
-        #-----------------------------------------------#
-        #   利用transformer模块进行特征提取
-        #   256, 256 => 256, 256
-        #-----------------------------------------------#
+
         cur += depths[2]
         self.block4 = nn.ModuleList(
             [
@@ -453,9 +385,6 @@ class MixVisionTransformer(nn.Module):
         # outs = []
         outs2 = []
 
-        #----------------------------------#
-        #   block1
-        #----------------------------------#
         x, H, W = self.patch_embed1.forward(x)
         for i, blk in enumerate(self.block1):
             x = blk.forward(x, H, W)
@@ -468,9 +397,6 @@ class MixVisionTransformer(nn.Module):
         # outs.append(x1)
         outs2.append(x)
 
-        #----------------------------------#
-        #   block2
-        #----------------------------------#
         x, H, W = self.patch_embed2.forward(x)
         for i, blk in enumerate(self.block2):
             x = blk.forward(x, H, W)
@@ -541,7 +467,6 @@ class mit_b5(MixVisionTransformer):
             drop_rate=0.0, drop_path_rate=0.1)
         if pretrained:
             print("Load backbone weights")
-            #ckpt = torch.load("/media/xk/新加卷/code/WWXcode/cfadn/cfadn/data/segformer_b5_backbone_weights.pth")
             #ckpt = torch.load("/home/ubuntu/complete/cfadn/segformer_b5_backbone_weights.pth")
             ckpt = torch.load("/media/yaukalok/nonos/Coursejinan/teamproject/cfadn/segformer_b5_backbone_weights.pth")
             ckpt.pop("patch_embed1.proj.weight")

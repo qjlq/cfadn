@@ -60,17 +60,6 @@ class Base(nn.Module):
     def get_visuals(self): raise NotImplementedError
 
     def resume(self, checkpoint_file):
-        ##add
-        # from functools import partial
-        # import pickle
-        # pickle.load = partial(pickle.load, encoding="latin1")
-        # pickle.Unpickler = partial(pickle.Unpickler, encoding="latin1")
-        # model = torch.load(model_file, map_location=lambda storage, loc: storage, pickle_module=pickle)
-        # ##
-        # #checkpoint = torch.load(checkpoint_file, map_location=lambda storage, loc: storage, pickle_module=pickle) #add encoding='latin1'
-        # checkpoint = torch.load(checkpoint_file)
-        # for k, v in self._get_state_attrs():
-        #     if k in checkpoint: v.load_state_dict(checkpoint[k])
         checkpoint = torch.load(checkpoint_file)
         for k, v in self._get_state_attrs():
             if k in checkpoint: v.load_state_dict(checkpoint[k], strict=False)
@@ -99,12 +88,7 @@ class BaseTrain(Base):
 
             loss = sum(self._loss.values())
             self._loss['all'] = loss
-            #
-            #loss.requires_grad_(True) #my 省略了梯度
-            #
-            #torch.autograd.set_detect_anomaly(True) #for cpu
-            #
-            #if hasattr(torch.cuda, 'empty_cache'): torch.cuda.empty_cache()
+
             loss.backward()
             self._optimizer.step()
             if not backprop: backprop_off(self)

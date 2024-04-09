@@ -1,8 +1,4 @@
-# ---------------------------------------------------------------
-# Copyright (c) 2021, NVIDIA Corporation. All rights reserved.
-#
-# This work is licensed under the NVIDIA Source Code License
-# ---------------------------------------------------------------
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -63,14 +59,8 @@ class SegFormerHead(nn.Module):
     def forward(self, inputs):
         # c1, c2, c3, c4 = inputs
         c1, c2 = inputs
-        ############## MLP decoder on C1-C4 ###########
         # n, _, h, w = c4.shape
         n, _, h, w = c2.shape
-        # _c4 = self.linear_c4(c4).permute(0,2,1).reshape(n, -1, c4.shape[2], c4.shape[3])
-        # _c4 = F.interpolate(_c4, size=c1.size()[2:], mode='bilinear', align_corners=False)
-        #
-        # _c3 = self.linear_c3(c3).permute(0,2,1).reshape(n, -1, c3.shape[2], c3.shape[3])
-        # _c3 = F.interpolate(_c3, size=c1.size()[2:], mode='bilinear', align_corners=False)
 
         _c2 = self.linear_c2(c2).permute(0,2,1).reshape(n, -1, c2.shape[2], c2.shape[3])
         _c2 = F.interpolate(_c2, size=c1.size()[2:], mode='bilinear', align_corners=False)
@@ -101,17 +91,14 @@ class SegFormer(nn.Module):
         }[phi]
         self.decode_head = SegFormerHead(num_classes, self.in_channels, self.embedding_dim)
         self.convinput = nn.Conv2d(1, 4, kernel_size=1)
-        # self.convout = nn.Conv2d(2, 256, kernel_size=1)
+
     def forward(self, inputs):
         inputs = self.convinput(inputs)
         H, W = inputs.size(2), inputs.size(3)
 
         x_1234 = self.backbone.forward(inputs)
-        # print(x[0].shape,x[1].shape,x[2].shape,x[3].shape) #get 4 output
         x = self.decode_head.forward(x_1234)
         # print(1,x.shape)
-        # x = self.convout(x)
-        # x_1234.append(x)
 
         x = F.interpolate(x, size=(H, W), mode='bilinear', align_corners=True)
         return x
