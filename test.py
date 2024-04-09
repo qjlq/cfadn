@@ -1,11 +1,8 @@
 import sys
-
 from adn.utils import Logger
 from adn.tester import Tester
 from adn.models import ADNTest
-#from skimage.measure import compare_ssim as ssim
 from skimage.metrics import structural_similarity as ssim
-#from skimage.measure import compare_psnr as psnr
 from skimage.metrics import peak_signal_noise_ratio as psnr
 
 class ADNTester(Tester):
@@ -52,9 +49,7 @@ class ADNTester(Tester):
             ("after", (pred_lh, img_high))], self.model.name
 
     def get_visuals(self, n=1):
-        #lookup = [
-        #   ("l", "img_low"), ("ll", "pred_ll"), ("lh", "pred_lh"),
-        #   ("h", "img_high"), ("hl", "pred_hl"), ("hh", "pred_hh")] #compare the differ
+
         lookup = [("lh", "pred_lh")] 
         visual_window = self.opts.visual_window
        
@@ -67,9 +62,7 @@ class ADNTester(Tester):
         return self.model._get_visuals(lookup, n, visual_func, False)
 
     def get_ori_visuals(self, n=1):
-        #lookup = [
-        #   ("l", "img_low"), ("ll", "pred_ll"), ("lh", "pred_lh"),
-        #   ("h", "img_high"), ("hl", "pred_hl"), ("hh", "pred_hh")] #compare the differ
+
         lookup = [("l", "img_low")] 
         visual_window = self.opts.visual_window
        
@@ -83,10 +76,7 @@ class ADNTester(Tester):
 
     def get_logger(self, opts):
         self.logger = Logger(self.run_dir, self.epoch, self.run_name, self.img_width, self.img_height)
-        # self.logger.add_iter_visual_log(self.get_visuals, 1, "testoutputPath") #old path "test_visuals"
-        # self.logger.add_iter_visual_log(self.get_visuals, 1, self.res_path) #old path "test_visuals"
         self.logger.add_iter_visual_log(self.get_visuals, 1, self.res_path) #old path "test_visuals"
-        # self.logger.add_iter_visual_log(self.get_ori_visuals, 1, "ori")
         self.logger.add_metric_log(self.get_pairs,
             (("ssim", self.get_metric(ssim)), ("psnr", self.get_metric(psnr))), opts.metrics_step)
 
@@ -94,9 +84,6 @@ class ADNTester(Tester):
 
     def get_logger2(self, opts):
         self.logger = Logger(self.run_dir, self.epoch, self.run_name, self.img_width, self.img_height)
-        # self.logger.add_iter_visual_log(self.get_visuals, 1, "testoutputPath") #old path "test_visuals"
-        # self.logger.add_iteiter_visual_namer_visual_log(self.get_visuals, 1, self.res_path) #old path "test_visuals"
-        # self.logger.add_iter_visual_log(self.get_ori_visuals, 1, "ori")
         self.logger.add_iter_visual_log2(self.get_visuals,self.get_ori_visuals, 1, self.res_path, "ori")
         self.logger.add_metric_log(self.get_pairs,
             (("ssim", self.get_metric(ssim)), ("psnr", self.get_metric(psnr))), opts.metrics_step)
@@ -110,14 +97,7 @@ class ADNTester(Tester):
             model.mask = mask
 
 if __name__ == "__main__":
-    # img_width = 512
-    # img_height = 512
-    # if len(sys.argv)>=5:
-    #     res_path = sys.argv[2]
-    #     img_width = int(sys.argv[3])
-    #     img_height = int(sys.argv[4])
-    # print(img_width)
-    # print(img_height)
+
     tester = ADNTester(
         name="adn", model_class=ADNTest,
         description="Test an artifact disentanglement network")

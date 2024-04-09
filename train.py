@@ -4,28 +4,22 @@ from adn.utils import \
     get_last_checkpoint, add_post, Logger
 from adn.datasets import get_dataset
 from adn.models import ADNTrain
-#OUTSIDE import
+
 import os
-#os.environ['CUDA_VISIBLE_DEVICES']='0'
+
 import os.path as path
 import argparse
-import torch #my
+import torch 
 from torch.utils.data import DataLoader
-#from skimage.measure import compare_ssim as ssim
-# from skimage.metrics import structural_similarity as ssim
-#from skimage.measure import compare_psnr as psnr
-# from skimage.metrics import peak_signal_noise_ratio as psnr
-
 
 if __name__ == "__main__":
-    # Parse command line options
+
     parser = argparse.ArgumentParser(description="Train an artifact disentanglement network")
     parser.add_argument("run_name", help="name of the run")
     parser.add_argument("--default_config", default="config/adn.yaml", help="default configs")
     parser.add_argument("--run_config", default="runs/adn.yaml", help="run configs")
     args = parser.parse_args()
 
-    # Get ADN options
     opts = get_config(args.default_config)
     run_opts = get_config(args.run_config)
     if args.run_name in run_opts and "train" in run_opts[args.run_name]:
@@ -35,7 +29,6 @@ if __name__ == "__main__":
     if not path.isdir(run_dir): os.makedirs(run_dir)
     save_config(opts, path.join(run_dir, "train_options.yaml"))
 
-    # Get dataset
     def get_image(data):
         dataset_type = dataset_opts['dataset_type']
         if dataset_type == "deep_lesion":
@@ -54,7 +47,6 @@ if __name__ == "__main__":
         batch_size=opts["batch_size"], num_workers=opts['num_workers'], shuffle=True)
     train_loader = add_post(train_loader, get_image)
 
-    # Get checkpoint
     if opts['last_epoch'] == 'last':
         checkpoint, start_epoch = get_last_checkpoint(run_dir)
     else:
@@ -62,49 +54,24 @@ if __name__ == "__main__":
         checkpoint = path.join(run_dir, "net_{}".format(start_epoch))
         if type(start_epoch) is not int: start_epoch = 0
 
-    # Get model
     model = ADNTrain(opts['learn'], opts['loss'], **opts['model'])
-    if opts['use_gpu']: model.cuda()  #用Gpu
-    #if opts['use_gpu']: model.cpu()    #用cpu
-#    if path.isfile(checkpoint): model.resume(checkpoint) #my 调用会出问题
+    if opts['use_gpu']: model.cuda() 
 
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = "0, 1"
-    device_ids = [0, 1]  # 可用GPU
+    device_ids = [0, 1] 
     model = torch.nn.DataParallel(model,device_ids=device_ids)
-    model = model.cuda(device=device_ids[0])    #模型加载到设备0
+    model = model.cuda(device=device_ids[0])
+    model = model.module
 
-    # model = torch.nn.DataParallel(model,device_ids=[0,1],output_device=[1])
-    #model = torch.nn.DataParallel(model,device_ids=[0,1]) #multiple gpu
-    #if opts['use_gpu']: model.cuda()  #用Gpu
-    
-
-    #if opts['use_gpu']: model.cpu()    #用cpu
-#    if path.isfile(checkpoint): model.resume(checkpoint) #my 调用会出问题
-    #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    # Get logger
     logger = Logger(run_dir, start_epoch, args.run_name)
     logger.add_loss_log(model.module.get_loss, opts["print_step"], opts['window_size'])
     logger.add_iter_visual_log(model.module.get_visuals, opts['visualize_step'], "train_visuals")
     logger.add_save_log(model.module.save, opts['save_step'])
 
-    # Train the model
     for epoch in range(start_epoch, opts['num_epochs']):
-        #
-        #以下为不考虑梯度，还有base 要更改
-        #
-        # with torch.no_grad(): #my
-        #     for data in logger(train_loader):
-        #         model.optimize(*data)
-        #     model.update_lr()
-        #
-        #以下为原本代码
-        #
+
        
         for data in logger(train_loader):
             model.module.optimize(*data)
             model.module.update_lr()
-        # import torch, gc
-        #
-        # gc.collect()
-        # torch.cuda.empty_cache()
