@@ -100,7 +100,9 @@ class Tester(object):
         with torch.no_grad(): #使用 torch.no_grad() 来禁用自动求导
             for data in logger(loader):
                 self.evaluate(model, data)
-        
+
+        get_err(self.res_path)
+
         # logger2 = self.get_logger2(opts) #log sets
 
         # with torch.no_grad(): #使用 torch.no_grad() 来禁用自动求导

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 import re
-
+# from PIL import Image
 
 # dataFile = './data/deep_lesion/train/temp'
 # datapath = os.listdir(dataFile)
@@ -45,20 +45,27 @@ def takeSize():
     return image.shape
 
 
-def get_err():
-    outpath = './run/deep_lesion/err'
-    dataFile1 = './run/deep_lesion/ori'
-    dataFile2 = './run/deep_lesion/test'
+def get_err(out_dir):
+    outpath = './runs/deep_lesion/err'
+    dataFile1 = './runs/deep_lesion/ori'
+    dataFile2 = os.path.join('./runs/deep_lesion/',out_dir)
+    # print(dataFile2)
+    #dataFile2 = './run/deep_lesion/'
     datapath = os.listdir(dataFile1)
     datapath2 = os.listdir(dataFile2)
     for i in datapath:
         for j in datapath2:
-            if re.match(os.path.splitext(i)[0],j).group() != None:
-                img = cv2.imread(i)
-                img2 = cv2.imread(j)
+            #print(re.match(os.path.splitext(i)[0],j))
+            if re.match(os.path.splitext(i)[0],j) != None:
+                pimg = os.path.join(dataFile1,i)
+                pimg2 = os.path.join(dataFile2,j)
+                img = cv2.imread(pimg)
+                img2 = cv2.imread(pimg2)
                 img2 = cv2.resize(img2,(img.shape[1],img.shape[0]))
                 err = cv2.absdiff(img,img2)     #差值的绝对值
-                cv2.imwrite(outpath, err)
+                errPath = os.path.join(outpath,f"{os.path.splitext(i)[0]}.png")
+                cv2.imwrite(errPath, err)
+                # Image.fromarray(err).convert('RGB').save(errPath)
                 continue
 # image = image * 255
 # new = Image.fromarray(image.astype(np.uint8))
