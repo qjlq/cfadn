@@ -20,18 +20,6 @@ dataset:
     random_mask: True 
     random_flip: True
     load_mask: False 
-  spineweb:
-    a_dir: data/spineweb/train/artifact
-    b_dir: data/spineweb/train/no_artifact
-    random_flip: True
-    a_range: [-1000.0, 2000.0]
-    b_range: [-1000.0, 2000.0]
-  nature_image:
-    a_dir: "data/nature_image/train/artifact"
-    b_dir: "data/nature_image/train/no_artifact"
-    random_flip: True
-    load_size: 384
-    crop_size: 256
 model:
   g_type: adn
   d_type: nlayer
@@ -46,7 +34,7 @@ model:
     up_norm: layer
     fuse: True 
     shared_decoder: False 
-  nlayer:
+  layer:
     input_nc: 1
     ndf: 64
     n_layers: 2

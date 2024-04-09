@@ -22,7 +22,6 @@ class Logger(object):
             lambda x: np.format_float_scientific(x, exp_digits=1, precision=2)
 
     def _to_dict(self, d):
-        # TODO: two dicts pointing to each other triggers an infinite recursion
         if type(d) is defaultdict:
             d = dict(d)
         for k, v in d.items():
@@ -136,7 +135,6 @@ class Logger(object):
                     if not path.isdir(iter_visual_dir): os.makedirs(iter_visual_dir)
                     visual_file = path.join(iter_visual_dir,
                         "epoch{}_iter{}_{}.png".format(self.epoch, it, k))
-                    # Image.fromarray(v).convert('RGB').resize((1200,1400)).save(visual_file) #change image size 
                     Image.fromarray(v).convert('RGB').resize((self.img_width,self.img_height)).save(visual_file) #change image size 
 
             if hasattr(self, 'ori') and it % self.iter_visual_freq == 0:
@@ -145,7 +143,6 @@ class Logger(object):
                     if not path.isdir(iter_visual_dir): os.makedirs(iter_visual_dir)
                     visual_file = path.join(iter_visual_dir,
                         "epoch{}_iter{}_{}.png".format(self.epoch, it, k))
-                    # Image.fromarray(v).convert('RGB').resize((1200,1400)).save(visual_file) #change image size 
                     Image.fromarray(v).convert('RGB').resize((self.img_width,self.img_height)).save(visual_file) #change image size 
 
 
@@ -186,5 +183,4 @@ class Logger(object):
                 for k, v in visuals.items():
                     visual_file = path.join(visual_dir,
                         "epoch{}_{}_{}.png".format(self.epoch, k, i))
-                    #Image.fromarray(v).convert('RGB').resize((500,600)).save(visual_file)
         self.epoch += 1

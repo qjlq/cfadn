@@ -30,8 +30,7 @@ class Tester(object):
         parser.add_argument("--img_width", default=self.ori_size[0] ,help="image width")
         parser.add_argument("--img_height", default=self.ori_size[1],help="image height")
         parser.add_argument("--default_config", default=default_config, help="default configs")
-        parser.add_argument("--run_config", default=run_config, help="run configs")
-        # parser.add_argument("--res_path", default=self.res_path, help="result path")
+        parser.add_argument("--run_config", default=run_config, help="run configs"))
 
         args = parser.parse_args()
         return args
@@ -94,7 +93,6 @@ class Tester(object):
         loader = self.get_loader(opts) #load data
         checkpoint = self.get_checkpoint(opts) # if last run train not complete then resume the train from that point
         model = self.get_model(opts, checkpoint) # 加载模型
-        # logger = self.get_logger(opts) #log set\
         logger = self.get_logger2(opts) #log set\    
 
         with torch.no_grad(): #使用 torch.no_grad() 来禁用自动求导
@@ -102,9 +100,3 @@ class Tester(object):
                 self.evaluate(model, data)
 
         get_err(self.res_path)
-
-        # logger2 = self.get_logger2(opts) #log sets
-
-        # with torch.no_grad(): #使用 torch.no_grad() 来禁用自动求导
-        #     for data in logger2(loader):
-        #         self.evaluate(model, data)
