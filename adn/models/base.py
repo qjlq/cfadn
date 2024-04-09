@@ -31,8 +31,6 @@ class Base(nn.Module):
         return {tags: self._make_visuals(images, len(pairs), normalize)}
 
     def _get_state_attrs(self):
-        '''get the attributes with states (for saving and loading)
-        '''
         state_attrs = {}
         for k in dir(self):
             if k[0] != '_':
@@ -120,8 +118,6 @@ class BaseTrain(Base):
         return wgt
 
     def _setup_learn(self, params, opt_type="adam"):
-        """ Setup optimizer and learning rate scheduler
-        """
         if opt_type == "adam":
             optimizer = optim.Adam(params, lr=self.lr,
                 betas=(self.beta1, self.beta2), weight_decay=self.weight_decay)
@@ -149,8 +145,6 @@ class BaseTrain(Base):
         return criterion
 
     def _summarize_loss(self, losses, sum_name="all"):
-        """ Collect loss from different sources and return collected loss with the sum
-        """
         def summarize_loss(losses, prefix=""):
             total_loss = {}
             if type(losses) is dict:

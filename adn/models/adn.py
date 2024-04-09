@@ -60,38 +60,8 @@ class ADNTrain(BaseTrain):
             self.model_g._criterion["gl"](pred, label)
             self.model_g._criterion["lh"](pred, label)
             self.model_g._criterion["ll"](pred, label)
-            # self.model_g._criterion["gl"](self.pred_lh, self.img_high)
-            # self.model_g._criterion["lh"](self.pred_lh, self.img_high)
-            # self.model_g._criterion["ll"](self.pred_ll, self.img_low)
-            self.model_dl._update()
 
-        # high -> high_l, high -> high_h
-        # if self._nonzero_weight("gh", "hh"):
-        #     self.model_dh._clear()
-        #     self.pred_hl, self.pred_hh = self.model_g.forward2(self.img_low, self.img_high)
-        #
-        #     self.model_g._criterion["gh"](self.pred_hl, self.img_low)
-        #     self.model_g._criterion["hh"](self.pred_hh, self.img_high)
-        #     self.model_dh._update()
-        #
-        # # low_h -> low_h_l
-        # if self._nonzero_weight("lhl"):
-        #     self.pred_lhl = self.model_g.forward_hl(self.pred_hl, self.pred_lh)
-        #     self.model_g._criterion["lhl"](self.pred_lhl, self.img_low)
-        #
-        # # high_l -> high_l_h
-        # if self._nonzero_weight("hlh"):
-        #     self.pred_hlh = self.model_g.forward_lh(self.pred_hl)
-        #     self.model_g._criterion["hlh"](self.pred_hlh, self.img_high)
-        #
-        # # artifact
-        # if self._nonzero_weight("art"):
-        #     ll = self.img_low if self.gt_art else self.pred_ll
-        #     hh = self.img_high if self.gt_art else self.pred_hh
-        #     self.model_g._criterion["art"](
-        #         ll - self.pred_lh, self.pred_hl - hh)
-        #
-        # self.model_g._update()
+            self.model_dl._update()
 
         # merge losses for printing
         self.loss = self._merge_loss(

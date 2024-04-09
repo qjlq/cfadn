@@ -51,7 +51,7 @@ class Decoder(nn.Module):
             input_chs.append(input_ch)
 
         for i in range(num_up):
-            m = nn.Sequential( #一个有序的容器，神经网络模块将按照在传入构造器的顺序依次被添加到计算图中执行
+            m = nn.Sequential(
                 nn.Upsample(scale_factor=2, mode="nearest"),
                 ConvolutionBlock(
                     in_channels=input_ch, out_channels=input_ch // 2, kernel_size=5,
@@ -69,8 +69,6 @@ class Decoder(nn.Module):
         self.layers = [getattr(self, "res{}".format(i)) for i in range(num_residual)] + \
             [getattr(self, "conv{}".format(i)) for i in range(num_up + 1)]
 
-        # If true, fuse (concat and conv) the side features with decoder features
-        # Otherwise, directly add artifact feature with decoder features
         if fuse:
             input_chs = input_chs[-num_sides:]
             for i in range(num_sides):
@@ -90,11 +88,8 @@ class Decoder(nn.Module):
 
         for i, j in enumerate(range(m - n, m)):
 
-            # S
-            # sides = self.conv(sides)
             print(x.shape, sides.shape)
             x = self.fuse(x, sides, i)
-            # x = self.layers[j](x)
 
         return x
 
@@ -112,7 +107,7 @@ class Decoder_new(nn.Module):
             input_chs.append(input_ch)
 
         for i in range(num_up):
-            m = nn.Sequential(  # 一个有序的容器，神经网络模块将按照在传入构造器的顺序依次被添加到计算图中执行
+            m = nn.Sequential(
                 nn.Upsample(scale_factor=2, mode="nearest"),
                 ConvolutionBlock(
                     in_channels=input_ch, out_channels=input_ch // 2, kernel_size=5,
@@ -130,8 +125,6 @@ class Decoder_new(nn.Module):
         self.layers = [getattr(self, "res{}".format(i)) for i in range(num_residual)] + \
                       [getattr(self, "conv{}".format(i)) for i in range(num_up + 1)]
 
-        # If true, fuse (concat and conv) the side features with decoder features
-        # Otherwise, directly add artifact feature with decoder features
         if fuse:
             input_chs = input_chs[-num_sides:]
             for i in range(num_sides):
@@ -152,22 +145,14 @@ class Decoder_new(nn.Module):
 
 
 class ADN(nn.Module):
-    """
-    Image with artifact is denoted as low quality image
-    Image without artifact is denoted as high quality image
-    """
-
     def __init__(self, input_ch=1, base_ch=64, num_down=2, num_residual=4, num_sides="all",
         res_norm='instance', down_norm='instance', up_norm='layer', fuse=True, shared_decoder=False):
         super(ADN, self).__init__()
 
         self.n = num_down + num_residual + 1 if num_sides == "all" else num_sides
         self.encoder_low = SegFormer(num_classes=1, phi='b5', pretrained=True)
-        # self.encoder_low = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
         self.encoder_high = SegFormer(num_classes=1, phi='b5', pretrained=True)
-        # self.encoder_high = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
         self.encoder_art = SegFormer(num_classes=1, phi='b5', pretrained=True)
-        # self.encoder_art = Encoder(input_ch, base_ch, num_down, num_residual, res_norm, down_norm)
         self.decoder = Decoder_new(input_ch, base_ch, num_down, num_residual, self.n, res_norm, up_norm, fuse=False)
         self.decoder_art = self.decoder if shared_decoder else deepcopy(self.decoder)
 
@@ -180,40 +165,25 @@ class ADN(nn.Module):
 
     def forward2(self, x_low, x_high):
         if hasattr(self, "saved") and self.saved[0] is x_low: sides = self.saved[1]
-        else: sides = self.encoder_art(x_low)  # encode artifact
-        # sides = F.interpolate(sides, size=(256, 256), mode='bilinear', align_corners=False)
-        y2 = self.encoder_high(x_high) # encode high quality image
-        y1 = self.decoder_art(y2, sides)  # decode image with artifact (low quality)
-        # y2 = self.decoder(code) # decode without artifact (high quality)
+        else: sides = self.encoder_art(x_low)
+        y2 = self.encoder_high(x_high)
+        y1 = self.decoder_art(y2, sides)
         return y1, y2
 
     def forward_lh(self, x_low):
-        y = self.encoder_low(x_low)  # encode low quality image
-        # y = self.decoder(code)
+        y = self.encoder_low(x_low)
         return y
 
     def forward_hl(self, x_low, x_high):
-        sides = self.encoder_art(x_low)  # encode artifact
-        code= self.encoder_high(x_high) # encode high quality image
-        y = self.decoder_art(code, sides)  # decode image with artifact (low quality)
+        sides = self.encoder_art(x_low)
+        code= self.encoder_high(x_high)
+        y = self.decoder_art(code, sides)
         return y
 
 
 class NLayerDiscriminator(nn.Module):
-    """Defines a PatchGAN discriminator
-    
-    This class is adopted from https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix
-    """
 
     def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d):
-        """Construct a PatchGAN discriminator
-
-        Parameters:
-            input_nc (int)  -- the number of channels in input images
-            ndf (int)       -- the number of filters in the last conv layer
-            n_layers (int)  -- the number of conv layers in the discriminator
-            norm_layer      -- normalization layer
-        """
         super(NLayerDiscriminator, self).__init__()
         if type(norm_layer) is str:
             norm_layer = {
